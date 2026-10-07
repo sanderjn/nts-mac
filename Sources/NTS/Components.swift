@@ -43,7 +43,9 @@ struct SectionLabel: View {
 
 struct NowPlayingHeader: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.openWindow) private var openWindow
     var logoSize: CGFloat = 30
+    var showsSettings = false
 
     var body: some View {
         VStack(spacing: 10) {
@@ -73,6 +75,18 @@ struct NowPlayingHeader: View {
             }
             .lineLimit(1)
             Spacer(minLength: 4)
+            if showsSettings {
+                Button {
+                    openWindow(id: NTSApp.settingsID)
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 15))
+                        .frame(width: 28, height: 36)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Settings")
+            }
             if model.showsCast {
                 CastButton()
             }

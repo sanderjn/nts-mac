@@ -6,7 +6,7 @@ struct WindowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            NowPlayingHeader(logoSize: 36)
+            NowPlayingHeader(logoSize: 36, showsSettings: true)
                 .padding(.horizontal, 28)
                 .padding(.top, 36)
                 .padding(.bottom, 16)
