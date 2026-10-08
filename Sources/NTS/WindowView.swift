@@ -3,10 +3,11 @@ import SwiftUI
 
 struct WindowView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(spacing: 0) {
-            NowPlayingHeader(logoSize: 36, showsSettings: true)
+            NowPlayingHeader(logoSize: 36)
                 .padding(.horizontal, 28)
                 .padding(.top, 36)
                 .padding(.bottom, 16)
@@ -26,6 +27,18 @@ struct WindowView: View {
                 }
                 .padding(28)
             }
+            Color.white.opacity(0.2).frame(height: 1)
+            HStack {
+                Text("Unofficial app, not affiliated with NTS.")
+                    .font(Theme.regular(13))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                FooterButton(title: "Settings") { openWindow(id: NTSApp.settingsID) }
+            }
+            .padding(.leading, 28)
+            .padding(.trailing, 22)
+            .padding(.vertical, 8)
         }
         .frame(minWidth: 560, minHeight: 420)
         .background(.black)

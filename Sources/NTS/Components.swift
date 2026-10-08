@@ -43,9 +43,7 @@ struct SectionLabel: View {
 
 struct NowPlayingHeader: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.openWindow) private var openWindow
     var logoSize: CGFloat = 30
-    var showsSettings = false
 
     var body: some View {
         VStack(spacing: 10) {
@@ -75,18 +73,6 @@ struct NowPlayingHeader: View {
             }
             .lineLimit(1)
             Spacer(minLength: 4)
-            if showsSettings {
-                Button {
-                    openWindow(id: NTSApp.settingsID)
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 15))
-                        .frame(width: 28, height: 36)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Settings")
-            }
             if model.showsCast {
                 CastButton()
             }
@@ -104,6 +90,25 @@ struct NowPlayingHeader: View {
             .keyboardShortcut(.space, modifiers: [])
             .accessibilityLabel(model.playback == .stopped ? "Play" : "Pause")
         }
+    }
+}
+
+struct FooterButton: View {
+    let title: String
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Text(title.uppercased())
+                .font(Theme.bold(13))
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .foregroundStyle(hovering ? .black : .white)
+                .background(hovering ? .white : .black)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
     }
 }
 

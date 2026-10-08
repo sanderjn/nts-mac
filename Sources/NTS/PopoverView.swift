@@ -91,22 +91,3 @@ private struct StationRow: View {
         .id(station.id)
     }
 }
-
-private struct FooterButton: View {
-    let title: String
-    let action: () -> Void
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: action) {
-            Text(title.uppercased())
-                .font(Theme.bold(13))
-                .padding(.horizontal, 6)
-                .padding(.vertical, 4)
-                .foregroundStyle(hovering ? .black : .white)
-                .background(hovering ? .white : .black)
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering = $0 }
-    }
-}
