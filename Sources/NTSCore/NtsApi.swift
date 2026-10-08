@@ -16,7 +16,7 @@ public enum NtsApi {
         let channels = try JSONDecoder().decode(LiveResponse.self, from: body).results
         var shows: [String: LiveShow] = [:]
         for channel in channels {
-            guard let now = channel.now, let title = now.broadcast_title?.trimmed else { continue }
+            guard let now = channel.now, let title = now.broadcast_title?.unescaped.trimmed else { continue }
             shows[channel.channel_name] = LiveShow(title: title, imageURL: now.embeds?.details?.media?.url)
         }
         return shows
@@ -26,10 +26,10 @@ public enum NtsApi {
         try JSONDecoder().decode(MixtapesResponse.self, from: body).results.compactMap { mixtape in
             guard let endpoint = mixtape.audio_stream_endpoint?.trimmed, !endpoint.isEmpty,
                   let streamURL = URL(string: endpoint) else { return nil }
-            let subtitle = mixtape.subtitle?.trimmed
+            let subtitle = mixtape.subtitle?.unescaped.trimmed
             return Station(
                 id: "mixtape-\(mixtape.mixtape_alias)",
-                title: mixtape.title.trimmed,
+                title: mixtape.title.unescaped.trimmed,
                 subtitle: subtitle?.isEmpty == false ? subtitle : nil,
                 streamURL: streamURL,
                 isLive: false,
@@ -91,4 +91,33 @@ public enum NtsApi {
 
 private extension String {
     var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    // The API returns its texts HTML-escaped: "Fool&#039;s Game", "Tim &amp; Barry".
+    var unescaped: String {
+        var result = ""
+        var rest = self[...]
+        while let amp = rest.firstIndex(of: "&") {
+            result += rest[..<amp]
+            let tail = rest[rest.index(after: amp)...]
+            if let semi = tail.firstIndex(of: ";"), let character = Self.entity(tail[..<semi]) {
+                result += character
+                rest = tail[tail.index(after: semi)...]
+            } else {
+                result += "&"
+                rest = tail
+            }
+        }
+        return result + rest
+    }
+
+    private static let namedEntities = ["amp": "&", "lt": "<", "gt": ">", "quot": "\"", "apos": "'", "nbsp": " "]
+
+    private static func entity(_ name: Substring) -> String? {
+        guard name.hasPrefix("#") else { return namedEntities[String(name)] }
+        let digits = name.dropFirst()
+        let hex = digits.hasPrefix("x") || digits.hasPrefix("X")
+        guard let code = UInt32(hex ? digits.dropFirst() : digits, radix: hex ? 16 : 10),
+              let scalar = Unicode.Scalar(code) else { return nil }
+        return String(scalar)
+    }
 }

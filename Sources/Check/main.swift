@@ -25,6 +25,10 @@ expect(
 let partial = try NtsApi.parseLive(Data(#"{"results":[{"channel_name":"1"},{"channel_name":"2","now":{"broadcast_title":" X "}}]}"#.utf8))
 expect(partial == ["2": LiveShow(title: "X", imageURL: nil)], "channel without broadcast is skipped, title trimmed")
 
+let escaped = try NtsApi.parseLive(Data(#"{"results":[{"channel_name":"1","now":{"broadcast_title":"Fool&#039;s Game w/ Tim &amp; Barry"}},{"channel_name":"2","now":{"broadcast_title":"A &#x27;B&#x27; &amp;lt; R&B; &bogus; &#xD800;"}}]}"#.utf8))
+expect(escaped["1"]?.title == "Fool's Game w/ Tim & Barry", "html entities in a title are decoded")
+expect(escaped["2"]?.title == "A 'B' &lt; R&B; &bogus; &#xD800;", "entities decode once, unknown ones stay")
+
 let mixtapes = try NtsApi.parseMixtapes(fixture("mixtapes"))
 expect(mixtapes.count == 16, "16 mixtapes")
 expect(mixtapes.first?.title == "Poolside", "first mixtape title")
