@@ -35,9 +35,20 @@ struct NTSApp: App {
             PopoverView()
                 .environment(model)
         } label: {
-            Image(nsImage: Theme.menuBarIcon)
+            MenuBarLabel(model: model)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+private struct MenuBarLabel: View {
+    let model: AppModel
+
+    var body: some View {
+        // A TimelineView in a menu bar label hangs the app at launch, so the model keeps the time.
+        Image(nsImage: model.playback == .loading
+            ? Theme.menuBarSpinner[model.loadingStep % Theme.menuBarSpinner.count]
+            : Theme.menuBarIcon)
     }
 }
 

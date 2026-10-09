@@ -16,6 +16,8 @@ final class AppModel {
     private(set) var mixtapes: [Station] = []
     private(set) var currentID: String?
     private(set) var playback = Playback.stopped
+    /// Counts up while loading, for the spinner in the menu bar.
+    private(set) var loadingStep = 0
     private(set) var castDevices: [CastDevice] = []
     /// Nil plays on this Mac.
     private(set) var castDevice: CastDevice?
@@ -30,6 +32,7 @@ final class AppModel {
     @ObservationIgnored private var castSession: CastSession?
     @ObservationIgnored private var lastRefresh = Date.distantPast
     @ObservationIgnored private var hasPlayed = false
+    @ObservationIgnored private var loadingTicker: Task<Void, Never>?
     // Keeps the last station playable before the mixtape list has loaded.
     @ObservationIgnored private var saved: Station?
     @ObservationIgnored private var artwork: (url: URL, image: NSImage)?
@@ -183,6 +186,16 @@ final class AppModel {
 
     private func update(_ playback: Playback) {
         self.playback = playback
+        if playback != .loading {
+            loadingTicker?.cancel()
+            loadingTicker = nil
+        } else if loadingTicker == nil {
+            loadingTicker = Task { [weak self] in
+                while (try? await Task.sleep(for: .milliseconds(100))) != nil {
+                    self?.loadingStep += 1
+                }
+            }
+        }
         publishNowPlaying()
     }
 
