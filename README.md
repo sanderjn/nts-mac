@@ -59,6 +59,8 @@ Open them from the menu bar popover, or with <kbd>⌘</kbd><kbd>,</kbd> while th
 
 NTS recognises the tracks on its streams and shows them to its [Supporters](https://www.nts.live/supporters). Sign in with your NTS account under **Settings → NTS account** and the app shows the playing track under the show, in Control Center, and in a list of recent tracks in the window. Talk and unrecognised music show no track.
 
+Click a track to copy its artist and title. With **Track notifications** on in the settings, macOS shows a notification when a new track starts.
+
 Your password goes straight to the sign-in NTS itself uses and is not saved. What keeps you signed in is a token in your macOS keychain, which **Sign out** removes. After you update the app, macOS may ask once if NTS may use that keychain item.
 
 ## Building from source

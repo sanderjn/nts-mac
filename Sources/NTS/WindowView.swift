@@ -93,34 +93,53 @@ private struct TrackList: View {
 private struct TrackRow: View {
     let track: Track
     let isCurrent: Bool
+    @State private var hovering = false
+    @State private var copied = false
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(track.start.formatted(date: .omitted, time: .shortened))
-                .font(Theme.regular(13))
-                .opacity(0.5)
-                .frame(minWidth: 36, alignment: .leading)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(track.title.uppercased())
-                    .font(Theme.bold(15))
-                if !track.artist.isEmpty {
-                    Text(track.artist.uppercased())
-                        .font(Theme.regular(14))
-                        .opacity(0.7)
+        Button {
+            track.copy()
+            copied = true
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                // The time stays in place unseen, so the mark takes exactly its room.
+                Text(track.start.formatted(date: .omitted, time: .shortened))
+                    .font(Theme.regular(13))
+                    .opacity(copied ? 0 : 0.5)
+                    .frame(minWidth: 36, alignment: .leading)
+                    .overlay(alignment: .leading) {
+                        if copied {
+                            Image(systemName: "checkmark").font(.system(size: 12, weight: .bold))
+                        }
+                    }
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(track.title.uppercased())
+                        .font(Theme.bold(15))
+                    if !track.artist.isEmpty {
+                        Text(track.artist.uppercased())
+                            .font(Theme.regular(14))
+                            .opacity(0.7)
+                    }
+                }
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .foregroundStyle(hovering ? .black : .white)
+            .background(hovering ? .white : .black)
+            .overlay(alignment: .leading) {
+                if isCurrent && !hovering {
+                    Rectangle().fill(.white).frame(width: 3)
                 }
             }
-            .lineLimit(2)
-            .textSelection(.enabled)
+            .contentShape(Rectangle())
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 6)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .foregroundStyle(.white)
-        .overlay(alignment: .leading) {
-            if isCurrent {
-                Rectangle().fill(.white).frame(width: 3)
-            }
-        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .help("Copy \(track.line)")
+        .task(id: copied) { await copied.clearsAfterAMoment { copied = false } }
     }
 }
 

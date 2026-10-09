@@ -31,6 +31,16 @@ struct SettingsView: View {
             SectionLabel(title: "NTS account").padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 8)
             AccountSection()
                 .padding(.horizontal, 20)
+            if model.account.email != nil {
+                SettingToggle(
+                    title: "Track notifications",
+                    detail: model.notificationsBlocked
+                        ? "Allow notifications for NTS in System Settings first."
+                        : "Show a notification when a new track starts.",
+                    isOn: Binding { model.notifiesTracks } set: { model.setNotifiesTracks($0) }
+                )
+                .padding(.top, 8)
+            }
             Text("Version \(version). Unofficial app, not affiliated with NTS.")
                 .font(Theme.regular(13))
                 .opacity(0.5)
@@ -42,7 +52,10 @@ struct SettingsView: View {
         .frame(width: 380)
         .background(Color.black.ignoresSafeArea())
         .showsDockIconWhileOpen()
-        .onAppear { model.refreshLaunchesAtLogin() }
+        .onAppear {
+            model.refreshLaunchesAtLogin()
+            model.refreshNotifications()
+        }
     }
 
     private var version: String {

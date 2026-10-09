@@ -50,10 +50,7 @@ struct NowPlayingHeader: View {
             VStack(alignment: .leading, spacing: 3) {
                 controls
                 if let track = model.currentTrack {
-                    Text(track.line.uppercased())
-                        .font(Theme.regular(15))
-                        .lineLimit(1)
-                        .help(track.line)
+                    TrackLine(track: track)
                         .padding(.leading, logoSize + 12)
                 }
             }
@@ -102,8 +99,44 @@ struct NowPlayingHeader: View {
     }
 }
 
+private struct TrackLine: View {
+    let track: Track
+    @State private var copied = false
+
+    var body: some View {
+        Button {
+            track.copy()
+            copied = true
+        } label: {
+            Text(copied ? "COPIED" : track.line.uppercased())
+                .font(Theme.regular(15))
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("Copy \(track.line)")
+        .task(id: copied) { await copied.clearsAfterAMoment { copied = false } }
+    }
+}
+
 extension Track {
     var line: String { artist.isEmpty ? title : "\(artist) – \(title)" }
+
+    func copy() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(line, forType: .string)
+    }
+}
+
+extension Bool {
+    /// For a "copied" mark that should go away by itself.
+    @MainActor
+    func clearsAfterAMoment(_ clear: () -> Void) async {
+        guard self else { return }
+        try? await Task.sleep(for: .seconds(1.5))
+        clear()
+    }
 }
 
 struct FooterButton: View {

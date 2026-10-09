@@ -4,6 +4,7 @@ import MediaPlayer
 import NTSCore
 import Observation
 import ServiceManagement
+import UserNotifications
 
 @MainActor
 @Observable
@@ -33,6 +34,9 @@ final class AppModel {
     private(set) var currentTrack: Track?
     /// Signed in, but NTS does not show this account its tracks.
     private(set) var tracksDenied = false
+    private(set) var notifiesTracks = UserDefaults.standard.bool(forKey: notifiesTracksKey)
+    /// macOS does not let the app show notifications, which only System Settings can change.
+    private(set) var notificationsBlocked = false
 
     @ObservationIgnored private let player = StreamPlayer()
     @ObservationIgnored private let castBrowser = CastBrowser()
@@ -52,6 +56,7 @@ final class AppModel {
     private static let lastStationKey = "lastStation"
     private static let showsCastKey = "showsCast"
     private static let showsAirPlayKey = "showsAirPlay"
+    private static let notifiesTracksKey = "notifiesTracks"
 
     var current: Station? {
         (live + mixtapes).first { $0.id == currentID } ?? saved
@@ -165,6 +170,30 @@ final class AppModel {
     /// The login item can also be removed in System Settings.
     func refreshLaunchesAtLogin() {
         launchesAtLogin = SMAppService.mainApp.status == .enabled
+    }
+
+    func setNotifiesTracks(_ notifies: Bool) {
+        guard notifies else {
+            notifiesTracks = false
+            UserDefaults.standard.set(false, forKey: Self.notifiesTracksKey)
+            return
+        }
+        Task {
+            let allowed = (try? await notificationCenter?.requestAuthorization(options: [.alert])) ?? false
+            notificationsBlocked = !allowed
+            notifiesTracks = allowed
+            UserDefaults.standard.set(allowed, forKey: Self.notifiesTracksKey)
+        }
+    }
+
+    /// Notifications can also be turned off in System Settings.
+    func refreshNotifications() {
+        guard notifiesTracks || notificationsBlocked, let notificationCenter else { return }
+        Task {
+            let blocked = await notificationCenter.notificationSettings().authorizationStatus == .denied
+            notificationsBlocked = blocked
+            if blocked { notifiesTracks = false }
+        }
     }
 
     func setCastVolume(_ level: Double) {
@@ -285,6 +314,7 @@ final class AppModel {
                 tracks = fetched
             } else if let newest = fetched.first, !tracks.contains(where: { $0.id == newest.id }) {
                 tracks = Array(([newest] + tracks).prefix(Self.trackCount))
+                notify(newest, on: station)
             }
         case .failure(LiveTracks.Failure.notAllowed):
             tracksDenied = true
@@ -298,6 +328,21 @@ final class AppModel {
         // A talk show or a mix the service does not know leaves the last track standing, so an old one is not current.
         currentTrack = tracks.first.flatMap { $0.start.timeIntervalSinceNow > -Self.trackLifetime ? $0 : nil }
         publishNowPlaying()
+    }
+
+    private func notify(_ track: Track, on station: Station) {
+        guard notifiesTracks, let notificationCenter else { return }
+        let content = UNMutableNotificationContent()
+        content.title = track.title
+        content.subtitle = track.artist
+        content.body = station.title
+        // One identifier, so each track replaces the last instead of piling up in Notification Centre.
+        notificationCenter.add(UNNotificationRequest(identifier: "track", content: content, trigger: nil))
+    }
+
+    /// Nil without a bundle, as under `swift run`: asking for the centre crashes there.
+    private var notificationCenter: UNUserNotificationCenter? {
+        Bundle.main.bundleIdentifier == nil ? nil : .current()
     }
 
     private static let trackLifetime: TimeInterval = 15 * 60
