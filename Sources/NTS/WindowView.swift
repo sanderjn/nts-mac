@@ -12,20 +12,13 @@ struct WindowView: View {
                 .padding(.top, 36)
                 .padding(.bottom, 16)
             Color.white.opacity(0.2).frame(height: 1)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    SectionLabel(title: "Live")
-                    HStack(alignment: .top, spacing: 16) {
-                        ForEach(model.live) { StationTile(station: $0, aspectRatio: 16 / 9) }
-                    }
-                    if !model.mixtapes.isEmpty {
-                        SectionLabel(title: "Infinite Mixtapes").padding(.top, 20)
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 240), spacing: 16, alignment: .top)], alignment: .leading, spacing: 16) {
-                            ForEach(model.mixtapes) { StationTile(station: $0, aspectRatio: 1) }
-                        }
-                    }
+            HStack(spacing: 0) {
+                stations
+                // Always there for a signed-in account, so the stations do not jump aside when the first track comes in.
+                if model.account.email != nil {
+                    Color.white.opacity(0.2).frame(width: 1)
+                    TrackList()
                 }
-                .padding(28)
             }
             Color.white.opacity(0.2).frame(height: 1)
             HStack {
@@ -40,10 +33,94 @@ struct WindowView: View {
             .padding(.trailing, 22)
             .padding(.vertical, 8)
         }
-        .frame(minWidth: 560, minHeight: 420)
+        .frame(minWidth: model.account.email == nil ? 560 : 720, minHeight: 420)
         .background(.black)
         .ignoresSafeArea()
         .showsDockIconWhileOpen()
+    }
+
+    private var stations: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionLabel(title: "Live")
+                HStack(alignment: .top, spacing: 16) {
+                    ForEach(model.live) { StationTile(station: $0, aspectRatio: 16 / 9) }
+                }
+                if !model.mixtapes.isEmpty {
+                    SectionLabel(title: "Infinite Mixtapes").padding(.top, 20)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 240), spacing: 16, alignment: .top)], alignment: .leading, spacing: 16) {
+                        ForEach(model.mixtapes) { StationTile(station: $0, aspectRatio: 1) }
+                    }
+                }
+            }
+            .padding(28)
+        }
+    }
+}
+
+private struct TrackList: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                SectionLabel(title: "Tracks")
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+                if model.tracks.isEmpty {
+                    Text(note)
+                        .font(Theme.regular(14))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .padding(.horizontal, 20)
+                } else {
+                    ForEach(model.tracks.prefix(10)) { track in
+                        TrackRow(track: track, isCurrent: track.id == model.currentTrack?.id)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 28)
+        }
+        .frame(width: 250)
+    }
+
+    private var note: String {
+        if model.tracksDenied { return "NTS shows its tracks to Supporters only, and this account is not one." }
+        return model.playback == .stopped ? "Play a station to see its tracks." : "No tracks yet."
+    }
+}
+
+private struct TrackRow: View {
+    let track: Track
+    let isCurrent: Bool
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(track.start.formatted(date: .omitted, time: .shortened))
+                .font(Theme.regular(13))
+                .opacity(0.5)
+                .frame(minWidth: 36, alignment: .leading)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(track.title.uppercased())
+                    .font(Theme.bold(15))
+                if !track.artist.isEmpty {
+                    Text(track.artist.uppercased())
+                        .font(Theme.regular(14))
+                        .opacity(0.7)
+                }
+            }
+            .lineLimit(2)
+            .textSelection(.enabled)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(.white)
+        .overlay(alignment: .leading) {
+            if isCurrent {
+                Rectangle().fill(.white).frame(width: 3)
+            }
+        }
     }
 }
 

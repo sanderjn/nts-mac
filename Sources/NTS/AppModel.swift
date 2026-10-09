@@ -26,6 +26,13 @@ final class AppModel {
     private(set) var showsCast = UserDefaults.standard.object(forKey: showsCastKey) as? Bool ?? true
     private(set) var showsAirPlay = UserDefaults.standard.object(forKey: showsAirPlayKey) as? Bool ?? true
     private(set) var launchesAtLogin = SMAppService.mainApp.status == .enabled
+    let account = Account()
+    /// What the current station played, newest first. Stays empty without an account that may see it.
+    private(set) var tracks: [Track] = []
+    /// The newest of `tracks` while it can still be the one that is playing.
+    private(set) var currentTrack: Track?
+    /// Signed in, but NTS does not show this account its tracks.
+    private(set) var tracksDenied = false
 
     @ObservationIgnored private let player = StreamPlayer()
     @ObservationIgnored private let castBrowser = CastBrowser()
@@ -33,6 +40,10 @@ final class AppModel {
     @ObservationIgnored private var lastRefresh = Date.distantPast
     @ObservationIgnored private var hasPlayed = false
     @ObservationIgnored private var loadingTicker: Task<Void, Never>?
+    @ObservationIgnored private var trackUpdates: Task<Void, Never>?
+    /// The station `tracks` belong to.
+    @ObservationIgnored private var tracksStation: String?
+    @ObservationIgnored private var tracksLoaded = false
     // Keeps the last station playable before the mixtape list has loaded.
     @ObservationIgnored private var saved: Station?
     @ObservationIgnored private var artwork: (url: URL, image: NSImage)?
@@ -54,6 +65,11 @@ final class AppModel {
         currentID = saved?.id
         player.onStatusChange = { [weak self] in self?.update(Playback($0)) }
         castBrowser.onChange = { [weak self] in self?.castDevices = $0 }
+        account.onChange = { [weak self] in
+            self?.tracksDenied = false
+            self?.followTracks()
+            self?.publishNowPlaying()
+        }
         if showsCast { castBrowser.start() }
         registerRemoteCommands()
         // The local stream breaks during sleep anyway; without this it would reconnect and blare on wake.
@@ -176,6 +192,7 @@ final class AppModel {
         saved = station
         UserDefaults.standard.set(try? JSONEncoder().encode(station), forKey: Self.lastStationKey)
         hasPlayed = true
+        followTracks()
         if let castSession {
             castSession.play(station.castMedia)
         } else {
@@ -196,6 +213,7 @@ final class AppModel {
                 }
             }
         }
+        followTracks()
         publishNowPlaying()
     }
 
@@ -218,6 +236,73 @@ final class AppModel {
         publishNowPlaying()
     }
 
+    // MARK: - Tracks
+
+    /// Keeps `tracks` up to date for as long as the station plays.
+    private func followTracks() {
+        let station = account.email == nil ? nil : current
+        if station?.id != tracksStation {
+            tracksStation = station?.id
+            tracksLoaded = false
+            tracks = []
+            trackUpdates?.cancel()
+            trackUpdates = nil
+        }
+        guard playback != .stopped, let station else {
+            trackUpdates?.cancel()
+            trackUpdates = nil
+            tracksLoaded = false
+            currentTrack = nil
+            return
+        }
+        guard trackUpdates == nil else { return }
+        currentTrack = nil
+        trackUpdates = Task { [weak self] in
+            while !Task.isCancelled {
+                await self?.loadTracks(for: station)
+                // An account that may not see the tracks will not be allowed twenty seconds later either.
+                try? await Task.sleep(for: .seconds(self?.tracksDenied == true ? 900 : 20))
+            }
+        }
+    }
+
+    private func loadTracks(for station: Station) async {
+        // Every document read is on NTS's bill, so after the first list only the newest track is asked for.
+        let limit = tracksLoaded ? 1 : Self.trackCount
+        let result: Result<[Track], Error>
+        do {
+            guard let token = await account.idToken() else { throw LiveTracks.Failure.unavailable }
+            result = .success(try await LiveTracks.fetch(streamID: LiveTracks.streamID(for: station), idToken: token, limit: limit))
+        } catch {
+            result = .failure(error)
+        }
+        guard !Task.isCancelled, station.id == tracksStation else { return }
+        switch result {
+        case .success(let fetched):
+            tracksDenied = false
+            if !tracksLoaded {
+                tracksLoaded = true
+                tracks = fetched
+            } else if let newest = fetched.first, !tracks.contains(where: { $0.id == newest.id }) {
+                tracks = Array(([newest] + tracks).prefix(Self.trackCount))
+            }
+        case .failure(LiveTracks.Failure.notAllowed):
+            tracksDenied = true
+            tracksLoaded = false
+            tracks = []
+        case .failure(let error):
+            if error as? LiveTracks.Failure == .notSignedIn { account.discardIDToken() }
+            // Tracks may go by unseen until this works again, so the next answer has to be the whole list.
+            tracksLoaded = false
+        }
+        // A talk show or a mix the service does not know leaves the last track standing, so an old one is not current.
+        currentTrack = tracks.first.flatMap { $0.start.timeIntervalSinceNow > -Self.trackLifetime ? $0 : nil }
+        publishNowPlaying()
+    }
+
+    private static let trackLifetime: TimeInterval = 15 * 60
+    private static let trackCount = 12
+
     // MARK: - Now Playing and media keys
 
     private func publishNowPlaying() {
@@ -229,6 +314,11 @@ final class AppModel {
             MPNowPlayingInfoPropertyIsLiveStream: true,
             MPNowPlayingInfoPropertyMediaType: MPNowPlayingInfoMediaType.audio.rawValue
         ]
+        if let currentTrack {
+            info[MPMediaItemPropertyTitle] = currentTrack.title
+            info[MPMediaItemPropertyArtist] = currentTrack.artist.isEmpty ? station.title : currentTrack.artist
+            info[MPMediaItemPropertyAlbumTitle] = station.subtitle.map { "\(station.title) · \($0)" } ?? station.title
+        }
         if let url = station.imageURL {
             if let artwork, artwork.url == url {
                 info[MPMediaItemPropertyArtwork] = Self.mediaArtwork(artwork.image)

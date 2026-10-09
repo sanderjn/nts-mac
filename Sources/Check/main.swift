@@ -119,5 +119,65 @@ let load = CastPayload.load(liveMedia, sessionID: "s1", requestID: 2)
 expect(load.contains(#""contentId":"\#(stations[1].streamURL.absoluteString)""#), "load carries the stream url unescaped")
 expect(load.contains(#""images":[{"url":"https://img"}]"#), "load carries the artwork")
 
+let at = Date(timeIntervalSince1970: 1_000)
+let signedIn = try NtsAccount.parseTokens(Data(#"{"idToken":"a","refreshToken":"b","expiresIn":"3600","email":"x@y"}"#.utf8), now: at)
+expect(signedIn == NtsAccount.Tokens(idToken: "a", refreshToken: "b", expires: Date(timeIntervalSince1970: 4_600)), "sign-in answer")
+let refreshed = try NtsAccount.parseTokens(Data(#"{"id_token":"c","refresh_token":"d","expires_in":"60"}"#.utf8), now: at)
+expect(refreshed == NtsAccount.Tokens(idToken: "c", refreshToken: "d", expires: Date(timeIntervalSince1970: 1_060)), "refresh answer")
+
+func accountFailure(_ body: String) -> NtsAccount.Failure? {
+    do {
+        _ = try NtsAccount.parseTokens(Data(body.utf8))
+        return nil
+    } catch {
+        return error as? NtsAccount.Failure
+    }
+}
+expect(accountFailure(#"{"error":{"code":400,"message":"INVALID_LOGIN_CREDENTIALS"}}"#) == .wrongCredentials, "wrong password")
+expect(
+    accountFailure(#"{"error":{"message":"TOO_MANY_ATTEMPTS_TRY_LATER : Access to this account has been temporarily disabled."}}"#) == .tooManyAttempts,
+    "a code with a sentence after it"
+)
+expect(accountFailure(#"{"error":{"message":"TOKEN_EXPIRED"}}"#) == .signedOut, "a dead refresh token signs out")
+expect(accountFailure(#"{"error":{"message":"QUOTA_EXCEEDED"}}"#) == .unavailable, "an unknown error")
+expect(accountFailure(#"{"idToken":"a"}"#) == .unavailable, "half an answer")
+expect(accountFailure("<html>") == .unavailable, "no json at all")
+
+expect(LiveTracks.streamID(for: stations[0]) == "nts1" && LiveTracks.streamID(for: stations[1]) == "nts2", "live channels file under nts1 and nts2")
+expect(LiveTracks.streamID(for: mixtapes[0]) == mixtapes[0].id.dropFirst("mixtape-".count), "a mixtape files under its alias")
+expect(
+    String(decoding: LiveTracks.query(streamID: "nts1", limit: 12), as: UTF8.self)
+        == #"{"structuredQuery":{"from":[{"collectionId":"live_tracks"}],"limit":12,"orderBy":[{"direction":"DESCENDING","field":{"fieldPath":"start_time"}}],"where":{"fieldFilter":{"field":{"fieldPath":"stream_id"},"op":"EQUAL","value":{"stringValue":"nts1"}}}}}"#,
+    "tracks query"
+)
+
+let tracks = try LiveTracks.parse(Data(#"""
+[
+  {"document":{"name":"projects/p/databases/(default)/documents/live_tracks/a","fields":{
+    "song_title":{"stringValue":" Silhouettes "},
+    "artist_names":{"arrayValue":{"values":[{"stringValue":"Floating Points"},{"stringValue":"Someone Else"}]}},
+    "start_time":{"timestampValue":"2026-10-09T10:11:12.123456789Z"}}},"readTime":"2026-10-09T10:12:00.1Z"},
+  {"document":{"name":"b","fields":{"song_title":{"stringValue":""},"start_time":{"timestampValue":"2026-10-09T10:08:00Z"}}}},
+  {"document":{"name":"c","fields":{"song_title":{"stringValue":"Untitled"},"artist_names":{"arrayValue":{}},"start_time":{"timestampValue":"2026-10-09T10:05:00Z"}}}}
+]
+"""#.utf8))
+expect(tracks.map(\.id) == ["projects/p/databases/(default)/documents/live_tracks/a", "c"], "a track without a title is left out")
+expect(tracks.first?.title == "Silhouettes" && tracks.first?.artist == "Floating Points, Someone Else", "track title and artists")
+expect(tracks.first?.start == Date(timeIntervalSince1970: 1_791_540_672), "start time with nine decimals")
+expect(tracks.last?.artist == "", "a track without artists")
+expect(try LiveTracks.parse(Data(#"[{"readTime":"2026-10-09T10:12:00.1Z"}]"#.utf8)).isEmpty, "no tracks yet")
+
+func tracksFailure(_ body: String) -> LiveTracks.Failure? {
+    do {
+        _ = try LiveTracks.parse(Data(body.utf8))
+        return nil
+    } catch {
+        return error as? LiveTracks.Failure
+    }
+}
+expect(tracksFailure(#"[{"error":{"code":403,"message":"Missing or insufficient permissions.","status":"PERMISSION_DENIED"}}]"#) == .notAllowed, "tracks are for supporters")
+expect(tracksFailure(#"{"error":{"code":401,"status":"UNAUTHENTICATED"}}"#) == .notSignedIn, "a bare error for a bad token")
+expect(tracksFailure("gateway timeout") == .unavailable, "an unreadable answer")
+
 print(failures == 0 ? "OK" : "\(failures) failed")
 exit(failures == 0 ? 0 : 1)

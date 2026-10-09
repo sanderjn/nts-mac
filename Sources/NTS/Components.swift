@@ -47,7 +47,16 @@ struct NowPlayingHeader: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            controls
+            VStack(alignment: .leading, spacing: 3) {
+                controls
+                if let track = model.currentTrack {
+                    Text(track.line.uppercased())
+                        .font(Theme.regular(15))
+                        .lineLimit(1)
+                        .help(track.line)
+                        .padding(.leading, logoSize + 12)
+                }
+            }
             if let volume = model.castVolume {
                 CastVolumeSlider(volume: volume)
             }
@@ -91,6 +100,10 @@ struct NowPlayingHeader: View {
             .accessibilityLabel(model.playback == .stopped ? "Play" : "Pause")
         }
     }
+}
+
+extension Track {
+    var line: String { artist.isEmpty ? title : "\(artist) – \(title)" }
 }
 
 struct FooterButton: View {

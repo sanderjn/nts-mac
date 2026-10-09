@@ -13,7 +13,7 @@
   <a href="https://github.com/sanderjn/nts-mac/releases/latest/download/NTS.dmg"><b>Download NTS for Mac</b></a>
 </p>
 
-Listen to [NTS](https://www.nts.live) from the menu bar: both live channels and the Infinite Mixtapes, on your Mac, a Chromecast, a Google speaker or an AirPlay device. Native Swift and SwiftUI, no Electron, no account, no tracking.
+Listen to [NTS](https://www.nts.live) from the menu bar: both live channels and the Infinite Mixtapes, on your Mac, a Chromecast, a Google speaker or an AirPlay device. Native Swift and SwiftUI, no Electron, no tracking, and no account needed to listen.
 
 This is a fan project. It is not made by, affiliated with or endorsed by NTS.
 
@@ -26,6 +26,7 @@ This is a fan project. It is not made by, affiliated with or endorsed by NTS.
 - Google Cast to a Chromecast, Google TV or Nest speaker, with a volume slider for the device.
 - AirPlay to any AirPlay speaker or TV.
 - Media keys and Control Center show and control what is playing.
+- For NTS Supporters: the track that is playing, and the tracks before it.
 - Settings to launch at login and to hide the Cast or AirPlay button.
 
 ## Install
@@ -53,6 +54,12 @@ Built for macOS 14 and later, Apple Silicon and Intel.
 Open them from the menu bar popover, or with <kbd>⌘</kbd><kbd>,</kbd> while the window is open.
 
 <img src="assets/settings.png" width="448" alt="The settings window">
+
+## Tracks
+
+NTS recognises the tracks on its streams and shows them to its [Supporters](https://www.nts.live/supporters). Sign in with your NTS account under **Settings → NTS account** and the app shows the playing track under the show, in Control Center, and in a list of recent tracks in the window. Talk and unrecognised music show no track.
+
+Your password goes straight to the sign-in NTS itself uses and is not saved. What keeps you signed in is a token in your macOS keychain, which **Sign out** removes. After you update the app, macOS may ask once if NTS may use that keychain item.
 
 ## Building from source
 
