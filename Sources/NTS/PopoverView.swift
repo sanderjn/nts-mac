@@ -81,17 +81,16 @@ private struct StationRow: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 6)
-            .foregroundStyle(hovering ? .black : .white)
-            .background(hovering ? .white : .black)
-            .overlay(alignment: .leading) {
-                if station.id == model.currentID {
-                    Rectangle().fill(hovering ? .black : .white).frame(width: 3)
-                }
-            }
+            .foregroundStyle(inverted ? .black : .white)
+            .background(inverted ? .white : .black)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .id(station.id)
+    }
+
+    private var inverted: Bool {
+        hovering || station.id == model.currentID
     }
 }

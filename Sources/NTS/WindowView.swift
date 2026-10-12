@@ -193,16 +193,15 @@ private struct StationTile: View {
                 .padding(.bottom, 8)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundStyle(hovering ? .black : .white)
-            .background(hovering ? .white : .black)
-            .overlay {
-                if station.id == model.currentID {
-                    Rectangle().strokeBorder(.white, lineWidth: 3)
-                }
-            }
+            .foregroundStyle(inverted ? .black : .white)
+            .background(inverted ? .white : .black)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
+    }
+
+    private var inverted: Bool {
+        hovering || station.id == model.currentID
     }
 }
