@@ -19,6 +19,15 @@ This is a fan project. It is not made by, affiliated with or endorsed by NTS.
 
 ![The NTS window with both live channels, the Infinite Mixtapes and the tracks that just played](assets/window.png)
 
+## Why not just the website?
+
+NTS plays fine in a browser on [nts.live](https://www.nts.live). This app is for when you want the radio out of your tabs:
+
+- **One click away.** It lives in the menu bar and can start with your Mac. No tab to find, and closing the browser does not stop the music.
+- **On your speakers.** Cast to a Chromecast or Google speaker and AirPlay are built in.
+- **The track without looking it up.** NTS Supporters see it in the menu bar, and can get a notification when a new one starts.
+- **Small.** A native app of 1.5 MB, not another browser window.
+
 ## Features
 
 - **Live channels 1 and 2** with the show that is on now, plus all **Infinite Mixtapes**.
@@ -71,7 +80,13 @@ Built for macOS 14 and later, Apple Silicon and Intel.
 
 Open them from the menu bar popover, from the bottom of the window, or with <kbd>⌘</kbd><kbd>,</kbd> while the window is open.
 
-## Building from source
+## Also
+
+[NTS for Android TV](https://github.com/sanderjn/nts-tv): the same stations on a Google TV or Android TV, picked with the remote.
+
+## Development
+
+### Building from source
 
 Needs a Swift 6 toolchain. The Command Line Tools are enough, Xcode is not required.
 
@@ -95,13 +110,13 @@ swift run Check
 
 `swift run CastProbe` lists the Cast devices on your network, which helps when a device does not show up in the app.
 
-## How casting works
+### How casting works
 
 There is no Google Cast SDK for macOS, so the app speaks the Cast protocol itself: it finds devices over Bonjour, opens a TLS connection and asks Google's Default Media Receiver to play the NTS stream. The code is in `Sources/NTSCore/Cast*.swift` and has no dependencies.
 
-## Also
+### Your own typeface
 
-[NTS for Android TV](https://github.com/sanderjn/nts-tv): the same stations on a Google TV or Android TV, picked with the remote.
+The app uses `Regular.ttf` and `Bold.ttf` from `~/Library/Application Support/NTS/Fonts` instead of the bundled typeface when both are there.
 
 ## License
 
