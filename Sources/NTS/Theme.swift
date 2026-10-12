@@ -4,18 +4,35 @@ import SwiftUI
 @MainActor
 enum Theme {
     static func registerFonts() {
-        for name in ["ArchivoNarrow-Regular", "ArchivoNarrow-Bold"] {
+        for name in [regularName, boldName] {
             guard let url = Bundle.main.url(forResource: name, withExtension: "ttf") else { continue }
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
         }
+        // A typeface of your own takes the place of the bundled one: Regular.ttf and Bold.ttf in Application Support/NTS/Fonts.
+        let fonts = URL.applicationSupportDirectory.appending(path: "NTS/Fonts")
+        guard let regular = register(fonts.appending(path: "Regular.ttf")),
+              let bold = register(fonts.appending(path: "Bold.ttf")) else { return }
+        regularName = regular
+        boldName = bold
+    }
+
+    private static var regularName = "ArchivoNarrow-Regular"
+    private static var boldName = "ArchivoNarrow-Bold"
+
+    private static func register(_ url: URL) -> String? {
+        guard let descriptors = CTFontManagerCreateFontDescriptorsFromURL(url as CFURL) as? [CTFontDescriptor],
+              let descriptor = descriptors.first,
+              let name = CTFontDescriptorCopyAttribute(descriptor, kCTFontNameAttribute) as? String else { return nil }
+        CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        return name
     }
 
     static func regular(_ size: CGFloat) -> Font {
-        .custom("ArchivoNarrow-Regular", fixedSize: size)
+        .custom(regularName, fixedSize: size)
     }
 
     static func bold(_ size: CGFloat) -> Font {
-        .custom("ArchivoNarrow-Bold", fixedSize: size)
+        .custom(boldName, fixedSize: size)
     }
 
     static let red = Color(red: 232 / 255, green: 23 / 255, blue: 23 / 255)
