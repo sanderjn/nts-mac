@@ -26,6 +26,7 @@ final class AppModel {
     private(set) var castVolume: Double?
     private(set) var showsCast = UserDefaults.standard.object(forKey: showsCastKey) as? Bool ?? true
     private(set) var showsAirPlay = UserDefaults.standard.object(forKey: showsAirPlayKey) as? Bool ?? true
+    private(set) var showsTracks = UserDefaults.standard.object(forKey: showsTracksKey) as? Bool ?? true
     private(set) var launchesAtLogin = SMAppService.mainApp.status == .enabled
     let account = Account()
     /// What the current station played, newest first. Stays empty without an account that may see it.
@@ -56,6 +57,7 @@ final class AppModel {
     private static let lastStationKey = "lastStation"
     private static let showsCastKey = "showsCast"
     private static let showsAirPlayKey = "showsAirPlay"
+    private static let showsTracksKey = "showsTracks"
     private static let notifiesTracksKey = "notifiesTracks"
 
     var current: Station? {
@@ -156,6 +158,11 @@ final class AppModel {
     func setShowsAirPlay(_ shows: Bool) {
         showsAirPlay = shows
         UserDefaults.standard.set(shows, forKey: Self.showsAirPlayKey)
+    }
+
+    func setShowsTracks(_ shows: Bool) {
+        showsTracks = shows
+        UserDefaults.standard.set(shows, forKey: Self.showsTracksKey)
     }
 
     func setLaunchesAtLogin(_ launches: Bool) {

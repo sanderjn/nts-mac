@@ -11,6 +11,10 @@ struct PopoverView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
             Color.white.opacity(0.2).frame(height: 1)
+            if let track = model.currentTrack {
+                PlayingTrackRow(track: track)
+                Color.white.opacity(0.2).frame(height: 1)
+            }
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {

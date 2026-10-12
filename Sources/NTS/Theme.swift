@@ -18,8 +18,11 @@ enum Theme {
         .custom("ArchivoNarrow-Bold", fixedSize: size)
     }
 
+    static let red = Color(red: 232 / 255, green: 23 / 255, blue: 23 / 255)
+
     static let logo = templateImage("Logo", size: 26, fallback: "radio")
     static let menuBarIcon = templateImage("Logo", size: 18, fallback: "radio")
+    static let tracks = templateImage("Tracks", size: 24, fallback: "music.note.list")
     static let cast = templateImage("Cast", size: 20, fallback: "tv")
     static let castConnected = templateImage("CastConnected", size: 20, fallback: "tv.fill")
 

@@ -79,7 +79,7 @@ private struct AccountSection: View {
                             .lineLimit(1)
                         Text(model.tracksDenied
                             ? "NTS shows its tracks to Supporters only, and this account is not one."
-                            : "The track that plays shows under the show.")
+                            : "Tracks show in the window and the menu bar.")
                             .font(Theme.regular(14))
                             .opacity(0.7)
                     }

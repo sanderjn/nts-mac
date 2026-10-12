@@ -43,17 +43,12 @@ struct SectionLabel: View {
 
 struct NowPlayingHeader: View {
     @Environment(AppModel.self) private var model
-    var logoSize: CGFloat = 30
+    // As tall as the title and subtitle are from cap to baseline, so the image lines up with both.
+    private let imageSize: CGFloat = 36
 
     var body: some View {
         VStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 3) {
-                controls
-                if let track = model.currentTrack {
-                    TrackLine(track: track)
-                        .padding(.leading, logoSize + 12)
-                }
-            }
+            controls
             if let volume = model.castVolume {
                 CastVolumeSlider(volume: volume)
             }
@@ -63,11 +58,17 @@ struct NowPlayingHeader: View {
 
     private var controls: some View {
         HStack(spacing: 4) {
-            Image(nsImage: Theme.logo)
-                .resizable()
-                .renderingMode(.template)
-                .frame(width: logoSize, height: logoSize)
-                .padding(.trailing, 8)
+            Group {
+                if let image = model.current?.imageURL {
+                    Artwork(url: image)
+                } else {
+                    Image(nsImage: Theme.logo)
+                        .resizable()
+                        .renderingMode(.template)
+                }
+            }
+            .frame(width: imageSize, height: imageSize)
+            .padding(.trailing, 8)
             VStack(alignment: .leading, spacing: 1) {
                 Text((model.current?.title ?? "Nothing playing").uppercased())
                     .font(Theme.bold(18))
@@ -99,8 +100,10 @@ struct NowPlayingHeader: View {
     }
 }
 
-private struct TrackLine: View {
+/// The playing track as a row of its own, for where there is no track list to find it in.
+struct PlayingTrackRow: View {
     let track: Track
+    @State private var hovering = false
     @State private var copied = false
 
     var body: some View {
@@ -108,15 +111,58 @@ private struct TrackLine: View {
             track.copy()
             copied = true
         } label: {
-            Text(copied ? "COPIED" : track.line.uppercased())
-                .font(Theme.regular(15))
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(spacing: 6) {
+                    // Room for the check mark, so the text stays put when it takes the dot's place.
+                    Group {
+                        if copied {
+                            Image(systemName: "checkmark").font(.system(size: 10, weight: .bold))
+                        } else {
+                            PlayingDot()
+                        }
+                    }
+                    .frame(width: markWidth, alignment: .leading)
+                    Text(track.title.uppercased())
+                        .font(Theme.bold(14))
+                }
+                if !track.artist.isEmpty {
+                    Text(track.artist.uppercased())
+                        .font(Theme.regular(13))
+                        .opacity(0.7)
+                        .padding(.leading, markWidth + 6)
+                }
+            }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .foregroundStyle(hovering ? .black : .white)
+            .background(hovering ? .white : .black)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .onHover { hovering = $0 }
         .help("Copy \(track.line)")
         .task(id: copied) { await copied.clearsAfterAMoment { copied = false } }
+    }
+
+    private let markWidth: CGFloat = 10
+}
+
+struct PlayingDot: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var faded = false
+
+    var body: some View {
+        Circle()
+            .fill(Theme.red)
+            .frame(width: 6, height: 6)
+            .opacity(faded ? 0 : 1)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 1).repeatForever()) { faded = true }
+            }
+            .accessibilityLabel("Playing now")
     }
 }
 
@@ -152,6 +198,26 @@ struct FooterButton: View {
                 .padding(.vertical, 4)
                 .foregroundStyle(hovering ? .black : .white)
                 .background(hovering ? .white : .black)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+    }
+}
+
+/// A cell in a bar of them, as tall as the bar and set apart from its neighbours by lines.
+struct BarButton<Label: View>: View {
+    let action: () -> Void
+    @ViewBuilder let label: Label
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            label
+                .padding(.horizontal, 12)
+                .frame(maxHeight: .infinity)
+                .foregroundStyle(hovering ? .black : .white)
+                .background(hovering ? .white : .black)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }

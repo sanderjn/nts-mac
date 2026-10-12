@@ -7,36 +7,56 @@ struct WindowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            NowPlayingHeader(logoSize: 36)
+            NowPlayingHeader()
                 .padding(.horizontal, 28)
                 .padding(.top, 36)
                 .padding(.bottom, 16)
             Color.white.opacity(0.2).frame(height: 1)
             HStack(spacing: 0) {
                 stations
-                // Always there for a signed-in account, so the stations do not jump aside when the first track comes in.
-                if model.account.email != nil {
+                // There for a signed-in account even without tracks, so the stations do not jump aside when the first one comes in.
+                if showsTracks {
                     Color.white.opacity(0.2).frame(width: 1)
                     TrackList()
                 }
             }
             Color.white.opacity(0.2).frame(height: 1)
-            HStack {
+            HStack(spacing: 0) {
                 Text("Unofficial app, not affiliated with NTS.")
                     .font(Theme.regular(13))
                     .foregroundStyle(.white.opacity(0.5))
                     .lineLimit(1)
+                    .padding(.leading, 28)
                 Spacer(minLength: 8)
-                FooterButton(title: "Settings") { openWindow(id: NTSApp.settingsID) }
+                if model.account.email != nil {
+                    Color.white.opacity(0.2).frame(width: 1)
+                    BarButton {
+                        model.setShowsTracks(!model.showsTracks)
+                    } label: {
+                        Image(nsImage: Theme.tracks)
+                            .renderingMode(.template)
+                            .opacity(model.showsTracks ? 1 : 0.4)
+                    }
+                    .help(model.showsTracks ? "Hide tracks" : "Show tracks")
+                    .accessibilityLabel(model.showsTracks ? "Hide tracks" : "Show tracks")
+                }
+                Color.white.opacity(0.2).frame(width: 1)
+                BarButton {
+                    openWindow(id: NTSApp.settingsID)
+                } label: {
+                    Text("SETTINGS").font(Theme.bold(13))
+                }
             }
-            .padding(.leading, 28)
-            .padding(.trailing, 22)
-            .padding(.vertical, 8)
+            .frame(height: 34)
         }
-        .frame(minWidth: model.account.email == nil ? 560 : 720, minHeight: 420)
+        .frame(minWidth: showsTracks ? 720 : 560, minHeight: 420)
         .background(.black)
         .ignoresSafeArea()
         .showsDockIconWhileOpen()
+    }
+
+    private var showsTracks: Bool {
+        model.account.email != nil && model.showsTracks
     }
 
     private var stations: some View {
@@ -101,11 +121,16 @@ private struct TrackRow: View {
             track.copy()
             copied = true
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 16) {
                 // The time stays in place unseen, so the mark takes exactly its room.
                 Text(track.start.formatted(date: .omitted, time: .shortened))
                     .font(Theme.regular(13))
                     .opacity(copied ? 0 : 0.5)
+                    .overlay(alignment: .trailing) {
+                        if isCurrent {
+                            PlayingDot().offset(x: 14)
+                        }
+                    }
                     .frame(minWidth: 36, alignment: .leading)
                     .overlay(alignment: .leading) {
                         if copied {
@@ -129,11 +154,6 @@ private struct TrackRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundStyle(hovering ? .black : .white)
             .background(hovering ? .white : .black)
-            .overlay(alignment: .leading) {
-                if isCurrent && !hovering {
-                    Rectangle().fill(.white).frame(width: 3)
-                }
-            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
