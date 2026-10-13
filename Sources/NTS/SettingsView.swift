@@ -40,6 +40,11 @@ struct SettingsView: View {
                     isOn: Binding { model.notifiesTracks } set: { model.setNotifiesTracks($0) }
                 )
                 .padding(.top, 8)
+                SettingToggle(
+                    title: "Track in the menu bar",
+                    detail: "Show the playing track next to the icon.",
+                    isOn: Binding { model.showsMenuBarTrack } set: { model.setShowsMenuBarTrack($0) }
+                )
             }
             Text("Version \(version). Unofficial app, not affiliated with NTS.")
                 .font(Theme.regular(13))

@@ -41,6 +41,7 @@ NTS recognises the tracks on its streams and shows them to its [Supporters](http
 
 - **In the window:** the last ten tracks next to the stations, with a red dot on the one that is playing. The button at the bottom hides the list.
 - **In the menu bar popover:** the playing track under the show.
+- **Next to the menu bar icon:** the playing track, if you turn that on in the settings.
 - **In Control Center:** the playing track, next to the show.
 - **Click a track** to copy its artist and title.
 - **Track notifications:** a notification when a new track starts. Off until you turn it on in the settings.

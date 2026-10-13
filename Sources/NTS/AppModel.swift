@@ -36,6 +36,7 @@ final class AppModel {
     /// Signed in, but NTS does not show this account its tracks.
     private(set) var tracksDenied = false
     private(set) var notifiesTracks = UserDefaults.standard.bool(forKey: notifiesTracksKey)
+    private(set) var showsMenuBarTrack = UserDefaults.standard.bool(forKey: showsMenuBarTrackKey)
     /// macOS does not let the app show notifications, which only System Settings can change.
     private(set) var notificationsBlocked = false
 
@@ -59,6 +60,7 @@ final class AppModel {
     private static let showsAirPlayKey = "showsAirPlay"
     private static let showsTracksKey = "showsTracks"
     private static let notifiesTracksKey = "notifiesTracks"
+    private static let showsMenuBarTrackKey = "showsMenuBarTrack"
 
     var current: Station? {
         (live + mixtapes).first { $0.id == currentID } ?? saved
@@ -163,6 +165,11 @@ final class AppModel {
     func setShowsTracks(_ shows: Bool) {
         showsTracks = shows
         UserDefaults.standard.set(shows, forKey: Self.showsTracksKey)
+    }
+
+    func setShowsMenuBarTrack(_ shows: Bool) {
+        showsMenuBarTrack = shows
+        UserDefaults.standard.set(shows, forKey: Self.showsMenuBarTrackKey)
     }
 
     func setLaunchesAtLogin(_ launches: Bool) {
