@@ -16,7 +16,7 @@ struct WindowView: View {
                 stations
                 // There for a signed-in account even without tracks, so the stations do not jump aside when the first one comes in.
                 if showsTracks {
-                    Color.white.opacity(0.2).frame(width: 1)
+                    TracksEdge()
                     TrackList()
                 }
             }
@@ -49,7 +49,7 @@ struct WindowView: View {
             }
             .frame(height: 34)
         }
-        .frame(minWidth: showsTracks ? 720 : 560, minHeight: 420)
+        .frame(minWidth: showsTracks ? 470 + model.tracksWidth : 560, minHeight: 420)
         .background(.black)
         .ignoresSafeArea()
         .showsDockIconWhileOpen()
@@ -101,12 +101,40 @@ private struct TrackList: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 28)
         }
-        .frame(width: 250)
+        .frame(width: model.tracksWidth)
     }
 
     private var note: String {
         if model.tracksDenied { return "NTS shows its tracks to Supporters only, and this account is not one." }
         return model.playback == .stopped ? "Play a station to see its tracks." : "No tracks yet."
+    }
+}
+
+/// The line between the stations and the tracks, which drags to make the tracks wider or narrower.
+private struct TracksEdge: View {
+    @Environment(AppModel.self) private var model
+    @State private var widthAtStart: CGFloat?
+
+    var body: some View {
+        Color.white.opacity(0.2)
+            .frame(width: 1)
+            .overlay {
+                Color.clear
+                    .frame(width: 11)
+                    .contentShape(Rectangle())
+                    .onHover { $0 ? NSCursor.resizeLeftRight.push() : NSCursor.pop() }
+                    .gesture(
+                        DragGesture(minimumDistance: 1, coordinateSpace: .global)
+                            .onChanged { drag in
+                                let start = widthAtStart ?? model.tracksWidth
+                                widthAtStart = start
+                                model.setTracksWidth(start - drag.translation.width)
+                            }
+                            .onEnded { _ in widthAtStart = nil }
+                    )
+            }
+            // Above the track list, or that takes the half of the handle that lies over it.
+            .zIndex(1)
     }
 }
 

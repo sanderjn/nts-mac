@@ -39,7 +39,7 @@ NTS plays fine in a browser on [nts.live](https://www.nts.live). This app is for
 
 NTS recognises the tracks on its streams and shows them to its [Supporters](https://www.nts.live/supporters). Sign in with your NTS account under **Settings → NTS account** and the app shows them too:
 
-- **In the window:** the last ten tracks next to the stations, with a red dot on the one that is playing. The button at the bottom hides the list.
+- **In the window:** the last ten tracks next to the stations, with a red dot on the one that is playing. Drag its edge to make the list wider or narrower; the button at the bottom hides it.
 - **In the menu bar popover:** the playing track under the show.
 - **Next to the menu bar icon:** the playing track, if you turn that on in the settings.
 - **In Control Center:** the playing track, next to the show.

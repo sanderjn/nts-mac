@@ -27,6 +27,7 @@ final class AppModel {
     private(set) var showsCast = UserDefaults.standard.object(forKey: showsCastKey) as? Bool ?? true
     private(set) var showsAirPlay = UserDefaults.standard.object(forKey: showsAirPlayKey) as? Bool ?? true
     private(set) var showsTracks = UserDefaults.standard.object(forKey: showsTracksKey) as? Bool ?? true
+    private(set) var tracksWidth = CGFloat(UserDefaults.standard.object(forKey: tracksWidthKey) as? Double ?? 250)
     private(set) var launchesAtLogin = SMAppService.mainApp.status == .enabled
     let account = Account()
     /// What the current station played, newest first. Stays empty without an account that may see it.
@@ -59,6 +60,7 @@ final class AppModel {
     private static let showsCastKey = "showsCast"
     private static let showsAirPlayKey = "showsAirPlay"
     private static let showsTracksKey = "showsTracks"
+    private static let tracksWidthKey = "tracksWidth"
     private static let notifiesTracksKey = "notifiesTracks"
     private static let showsMenuBarTrackKey = "showsMenuBarTrack"
 
@@ -165,6 +167,11 @@ final class AppModel {
     func setShowsTracks(_ shows: Bool) {
         showsTracks = shows
         UserDefaults.standard.set(shows, forKey: Self.showsTracksKey)
+    }
+
+    func setTracksWidth(_ width: CGFloat) {
+        tracksWidth = min(max(width.rounded(), 200), 480)
+        UserDefaults.standard.set(tracksWidth, forKey: Self.tracksWidthKey)
     }
 
     func setShowsMenuBarTrack(_ shows: Bool) {
