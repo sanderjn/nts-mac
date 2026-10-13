@@ -31,7 +31,7 @@ struct PopoverView: View {
             }
             .frame(height: 440)
             Color.white.opacity(0.2).frame(height: 1)
-            HStack {
+            HStack(spacing: 0) {
                 FooterButton(title: "Open window") {
                     openWindow(id: NTSApp.windowID)
                     NSApp.activate()
@@ -43,8 +43,7 @@ struct PopoverView: View {
                 Spacer()
                 FooterButton(title: "Quit") { NSApp.terminate(nil) }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .frame(height: 36)
         }
         .frame(width: 320)
         .background(.black)

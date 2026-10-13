@@ -194,10 +194,11 @@ struct FooterButton: View {
         Button(action: action) {
             Text(title.uppercased())
                 .font(Theme.bold(13))
-                .padding(.horizontal, 6)
-                .padding(.vertical, 4)
+                .padding(.horizontal, 14)
+                .frame(maxHeight: .infinity)
                 .foregroundStyle(hovering ? .black : .white)
                 .background(hovering ? .white : .black)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
