@@ -13,7 +13,7 @@
   <a href="https://github.com/sanderjn/nts-mac/releases/latest/download/NTS.dmg"><b>Download NTS for Mac</b></a>
 </p>
 
-Listen to [NTS](https://www.nts.live) from the menu bar: both live channels and the Infinite Mixtapes, on your Mac, a Chromecast, a Google speaker or an AirPlay device. NTS Supporters also see which track is playing. Native Swift and SwiftUI, no Electron, no tracking, and no account needed to listen.
+Listen to [NTS](https://www.nts.live) from the menu bar: both live channels with the show that is on now, and all Infinite Mixtapes. No tracking, and no account needed to listen.
 
 This is a fan project. It is not made by, affiliated with or endorsed by NTS.
 
@@ -23,20 +23,11 @@ This is a fan project. It is not made by, affiliated with or endorsed by NTS.
 
 NTS plays fine in a browser on [nts.live](https://www.nts.live). This app is for when you want the radio out of your tabs:
 
-- **One click away.** It lives in the menu bar and can start with your Mac. No tab to find, and closing the browser does not stop the music.
-- **On your speakers.** Cast to a Chromecast or Google speaker and AirPlay are built in.
-- **The track without opening the site.** NTS Supporters see it in the menu bar popover and in Control Center, and can get a notification when a new one starts.
-- **Small.** A native app of 1.5 MB, not another browser window.
-
-## Features
-
-- **Live channels 1 and 2** with the show that is on now, plus all **Infinite Mixtapes**.
-- **Menu bar first:** pick a station from the popover, open the full window when you want one.
-- **Google Cast** to a Chromecast, Google TV or Nest speaker, with a volume slider for the device.
-- **AirPlay** to any AirPlay speaker or TV.
+- **One click away.** Pick a station from the menu bar, or open the full window. It can start with your Mac, and closing the browser does not stop the music.
+- **On your speakers.** Google Cast to a Chromecast, Google TV or Nest speaker, with a volume slider for the device, and AirPlay to any AirPlay speaker or TV.
 - **Media keys and Control Center** show and control what is playing.
-- **Tracks for NTS Supporters:** the track that is playing and the ones before it, see below.
-- **Settings** to launch at login and to hide the Cast or AirPlay button.
+- **Tracks for NTS Supporters.** The playing track and the ones before it, without opening the site. See [Tracks](#tracks).
+- **Small.** A native Swift app and a 1.5 MB download, not another browser window.
 
 ## Tracks
 
@@ -78,7 +69,7 @@ Built for macOS 14 and later, Apple Silicon and Intel.
 
 ## Settings
 
-Open them from the menu bar popover, from the bottom of the window, or with <kbd>⌘</kbd><kbd>,</kbd> while the window is open.
+Launch at login, the Cast and AirPlay buttons, and your NTS account. Open them from the menu bar popover, from the bottom of the window, or with <kbd>⌘</kbd><kbd>,</kbd> while the window is open.
 
 ## Also
 
