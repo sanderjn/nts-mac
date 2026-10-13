@@ -25,7 +25,7 @@ NTS plays fine in a browser on [nts.live](https://www.nts.live). This app is for
 
 - **One click away.** It lives in the menu bar and can start with your Mac. No tab to find, and closing the browser does not stop the music.
 - **On your speakers.** Cast to a Chromecast or Google speaker and AirPlay are built in.
-- **The track without looking it up.** NTS Supporters see it in the menu bar, and can get a notification when a new one starts.
+- **The track without opening the site.** NTS Supporters see it in the menu bar popover and in Control Center, and can get a notification when a new one starts.
 - **Small.** A native app of 1.5 MB, not another browser window.
 
 ## Features
@@ -45,7 +45,7 @@ NTS plays fine in a browser on [nts.live](https://www.nts.live). This app is for
 NTS recognises the tracks on its streams and shows them to its [Supporters](https://www.nts.live/supporters). Sign in with your NTS account under **Settings → NTS account** and the app shows them too:
 
 - **In the window:** the last ten tracks next to the stations, with a red dot on the one that is playing. The button at the bottom hides the list.
-- **In the menu bar:** the playing track under the show.
+- **In the menu bar popover:** the playing track under the show.
 - **In Control Center:** the playing track, next to the show.
 - **Click a track** to copy its artist and title.
 - **Track notifications:** a notification when a new track starts. Off until you turn it on in the settings.
