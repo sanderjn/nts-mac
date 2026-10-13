@@ -19,6 +19,10 @@ This is a fan project. It is not made by, affiliated with or endorsed by NTS.
 
 ![The NTS window with both live channels, the Infinite Mixtapes and the tracks that just played](assets/window.png)
 
+## Other devices
+
+[NTS for Android TV](https://github.com/sanderjn/nts-tv): the same stations on a Google TV or Android TV, picked with the remote.
+
 ## Why not just the website?
 
 NTS plays fine in a browser on [nts.live](https://www.nts.live). This app is for when you want the radio out of your tabs:
@@ -70,10 +74,6 @@ Built for macOS 14 and later, Apple Silicon and Intel.
 ## Settings
 
 Launch at login, the Cast and AirPlay buttons, and your NTS account. Open them from the menu bar popover, from the bottom of the window, or with <kbd>⌘</kbd><kbd>,</kbd> while the window is open.
-
-## Also
-
-[NTS for Android TV](https://github.com/sanderjn/nts-tv): the same stations on a Google TV or Android TV, picked with the remote.
 
 ## Development
 
