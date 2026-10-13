@@ -178,7 +178,7 @@ private struct StationTile: View {
                     .aspectRatio(aspectRatio, contentMode: .fit)
                     .overlay(alignment: .bottomLeading) {
                         if let label = model.statusLabel(for: station) {
-                            StatusBadge(label: label).padding(8)
+                            StatusBadge(label: label)
                         }
                     }
                 VStack(alignment: .leading, spacing: 1) {
@@ -189,19 +189,22 @@ private struct StationTile: View {
                         .opacity(0.7)
                 }
                 .lineLimit(1)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 10)
                 .padding(.bottom, 8)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundStyle(inverted ? .black : .white)
-            .background(inverted ? .white : .black)
+            .foregroundStyle(hovering ? .black : .white)
+            .background(hovering ? .white : .black)
+            .overlay {
+                Rectangle().strokeBorder(.white.opacity(isCurrent ? 1 : 0.2), lineWidth: isCurrent ? 2 : 1)
+            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
     }
 
-    private var inverted: Bool {
-        hovering || station.id == model.currentID
+    private var isCurrent: Bool {
+        station.id == model.currentID
     }
 }
