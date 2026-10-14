@@ -4,6 +4,7 @@ import SwiftUI
 struct WindowView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,6 +40,12 @@ struct WindowView: View {
                     }
                     .help(model.showsTracks ? "Hide tracks" : "Show tracks")
                     .accessibilityLabel(model.showsTracks ? "Hide tracks" : "Show tracks")
+                }
+                Color.white.opacity(0.2).frame(width: 1)
+                BarButton {
+                    openURL(URL(string: "https://www.nts.live/supporters")!)
+                } label: {
+                    Text("SUPPORT NTS").font(Theme.bold(13))
                 }
                 Color.white.opacity(0.2).frame(width: 1)
                 BarButton {

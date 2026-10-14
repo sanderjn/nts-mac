@@ -49,15 +49,16 @@ private struct MenuBarLabel: View {
         Image(nsImage: model.playback == .loading
             ? Theme.menuBarSpinner[model.loadingStep % Theme.menuBarSpinner.count]
             : Theme.menuBarIcon)
+        // The menu bar ignores spacing and padding in its label, so a space sets the track apart from the icon.
         if let track {
-            Text(track)
+            Text(" " + track)
         }
     }
 
     // The menu bar has little room, and an item that does not fit next to the notch is not shown at all.
     private var track: String? {
-        guard model.showsMenuBarTrack, let line = model.currentTrack?.line else { return nil }
-        return line.count > 32 ? line.prefix(31).trimmingCharacters(in: .whitespaces) + "…" : line
+        guard model.showsMenuBarTrack else { return nil }
+        return model.currentTrack?.shortLine(room: 34)
     }
 }
 

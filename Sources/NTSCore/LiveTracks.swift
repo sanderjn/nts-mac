@@ -14,6 +14,18 @@ public struct Track: Identifiable, Equatable, Sendable {
     }
 
     public var artist: String { artists.joined(separator: ", ") }
+
+    /// Title first, then artist, in at most `room` characters: the longer of the two is cut first, neither below half.
+    public func shortLine(room: Int) -> String {
+        guard !artist.isEmpty else { return Self.cut(title, to: room) }
+        let titleRoom = max(room - artist.count, room / 2)
+        let shownTitle = Self.cut(title, to: titleRoom)
+        return "\(shownTitle) – \(Self.cut(artist, to: room - shownTitle.count))"
+    }
+
+    private static func cut(_ text: String, to length: Int) -> String {
+        text.count > length ? text.prefix(length - 1).trimmingCharacters(in: .whitespaces) + "…" : text
+    }
 }
 
 /// The tracks NTS recognises on its streams as they play. NTS only shows them to its Supporters.

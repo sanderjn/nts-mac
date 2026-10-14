@@ -179,5 +179,14 @@ expect(tracksFailure(#"[{"error":{"code":403,"message":"Missing or insufficient 
 expect(tracksFailure(#"{"error":{"code":401,"status":"UNAUTHENTICATED"}}"#) == .notSignedIn, "a bare error for a bad token")
 expect(tracksFailure("gateway timeout") == .unavailable, "an unreadable answer")
 
+func track(_ title: String, _ artist: String) -> Track {
+    Track(id: "", title: title, artists: artist.isEmpty ? [] : [artist], start: .now)
+}
+expect(track("Kinda Kinky", "Snapped Ankles").shortLine(room: 34) == "Kinda Kinky – Snapped Ankles", "a short line stays whole, title first")
+expect(track("The Creator Has a Master Plan (Peace)", "Pharoah Sanders").shortLine(room: 34) == "The Creator Has a… – Pharoah Sanders", "a long title gives way to a short artist")
+expect(track("Ode", "Alice Coltrane, Pharoah Sanders and Friends").shortLine(room: 34) == "Ode – Alice Coltrane, Pharoah Sander…", "a long artist gives way to a short title")
+expect(track("A Title That Is Far Too Long", "An Artist Name That Is Too Long").shortLine(room: 34) == "A Title That Is… – An Artist Name Th…", "both long, both cut")
+expect(track("Untitled", "").shortLine(room: 34) == "Untitled", "no artist, no dash")
+
 print(failures == 0 ? "OK" : "\(failures) failed")
 exit(failures == 0 ? 0 : 1)
