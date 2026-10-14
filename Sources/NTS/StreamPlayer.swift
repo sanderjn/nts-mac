@@ -1,4 +1,5 @@
 import AVFoundation
+import NTSCore
 
 /// Plays one endless stream. Stopping drops the connection, so resuming is always live.
 @MainActor
@@ -35,7 +36,7 @@ final class StreamPlayer {
 
     private func connect() {
         guard let url else { return }
-        player.replaceCurrentItem(with: AVPlayerItem(url: url))
+        player.replaceCurrentItem(with: AVPlayerItem(asset: AVURLAsset(url: url, options: [AVURLAssetHTTPUserAgentKey: Http.userAgent])))
         player.play()
         onStatusChange?(.loading)
         scheduleReconnect(after: 10)

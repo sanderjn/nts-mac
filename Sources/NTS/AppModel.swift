@@ -402,7 +402,7 @@ final class AppModel {
         artworkLoading = url
         Task {
             defer { if artworkLoading == url { artworkLoading = nil } }
-            guard let (data, _) = try? await URLSession.shared.data(from: url), let image = NSImage(data: data) else { return }
+            guard let (data, _) = try? await Http.session.data(from: url), let image = NSImage(data: data) else { return }
             guard current?.imageURL == url else { return }
             artwork = (url, image)
             publishNowPlaying()

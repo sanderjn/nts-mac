@@ -59,7 +59,7 @@ public enum NtsAccount {
         var request = request
         request.httpMethod = "POST"
         request.timeoutInterval = 15
-        guard let (data, _) = try? await URLSession.shared.data(for: request) else { throw Failure.unavailable }
+        guard let (data, _) = try? await Http.session.data(for: request) else { throw Failure.unavailable }
         return try parseTokens(data)
     }
 

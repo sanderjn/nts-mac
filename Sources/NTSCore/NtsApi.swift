@@ -41,7 +41,7 @@ public enum NtsApi {
     private static func get(_ url: String) async throws -> Data {
         var request = URLRequest(url: URL(string: url)!, timeoutInterval: 10)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await Http.session.data(for: request)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             throw URLError(.badServerResponse)
         }

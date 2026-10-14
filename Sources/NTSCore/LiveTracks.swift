@@ -51,7 +51,7 @@ public enum LiveTracks {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(idToken)", forHTTPHeaderField: "Authorization")
         request.httpBody = query(streamID: streamID, limit: limit)
-        guard let (data, _) = try? await URLSession.shared.data(for: request) else { throw Failure.unavailable }
+        guard let (data, _) = try? await Http.session.data(for: request) else { throw Failure.unavailable }
         return try parse(data)
     }
 
