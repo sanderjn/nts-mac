@@ -32,7 +32,6 @@ NTS plays in a browser on [nts.live](https://www.nts.live) and in its own apps f
 - **Media keys and Control Center** show and control what is playing.
 - **Tracks for NTS Supporters.** The playing track and the ones before it. See [Tracks](#tracks).
 - **Small.** A native Swift app and a 1.5 MB download.
-- **Private.** No analytics, no tracking.
 
 ## Tracks
 
