@@ -15,7 +15,7 @@
 
 Listen to [NTS](https://www.nts.live) from the menu bar: both live channels with the show that is on now, and all Infinite Mixtapes. No tracking, and no account needed to listen.
 
-This is a fan project. It is not made by, affiliated with or endorsed by NTS.
+This is a fan project. It is not made by, affiliated with or endorsed by NTS. If you like NTS, [support them](https://www.nts.live/supporters).
 
 ![The NTS window with both live channels, the Infinite Mixtapes and the tracks that just played](assets/window.png)
 
