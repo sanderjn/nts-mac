@@ -9,13 +9,13 @@
   <img src="https://img.shields.io/badge/Swift-6-orange" alt="Swift 6">
 </p>
 
+This is a fan project. It is not made by, affiliated with or endorsed by NTS, and the name and the logo belong to NTS. If you like NTS, [support them](https://www.nts.live/supporters). If you work at NTS and want anything changed or taken down, [open an issue](https://github.com/sanderjn/nts-mac/issues) and I will sort it out.
+
 <p align="center">
   <a href="https://github.com/sanderjn/nts-mac/releases/latest/download/NTS.dmg"><b>Download NTS for Mac</b></a>
 </p>
 
-Listen to [NTS](https://www.nts.live) from the menu bar: both live channels with the show that is on now, and all Infinite Mixtapes. No tracking, and no account needed to listen.
-
-This is a fan project. It is not made by, affiliated with or endorsed by NTS. If you like NTS, [support them](https://www.nts.live/supporters).
+Listen to [NTS](https://www.nts.live) from the menu bar: both live channels with the show that is on now, and all Infinite Mixtapes. No account needed to listen.
 
 ![The NTS window with both live channels, the Infinite Mixtapes and the tracks that just played](assets/window.png)
 
@@ -23,15 +23,16 @@ This is a fan project. It is not made by, affiliated with or endorsed by NTS. If
 
 [NTS for Android TV](https://github.com/sanderjn/nts-tv): the same stations on a Google TV or Android TV, picked with the remote.
 
-## Why not just the website?
+## Why an app?
 
-NTS plays fine in a browser on [nts.live](https://www.nts.live). This app is for when you want the radio out of your tabs:
+NTS plays in a browser on [nts.live](https://www.nts.live) and in its own apps for iPhone and Android. This one is for listening on a Mac, from the menu bar:
 
-- **One click away.** Pick a station from the menu bar, or open the full window. It can start with your Mac, and closing the browser does not stop the music.
+- **One click away.** Pick a station from the menu bar, or open the full window. It can start with your Mac.
 - **On your speakers.** Google Cast to a Chromecast, Google TV or Nest speaker, with a volume slider for the device, and AirPlay to any AirPlay speaker or TV.
 - **Media keys and Control Center** show and control what is playing.
-- **Tracks for NTS Supporters.** The playing track and the ones before it, without opening the site. See [Tracks](#tracks).
-- **Small.** A native Swift app and a 1.5 MB download, not another browser window.
+- **Tracks for NTS Supporters.** The playing track and the ones before it. See [Tracks](#tracks).
+- **Small.** A native Swift app and a 1.5 MB download.
+- **Private.** No analytics, no tracking.
 
 ## Tracks
 
@@ -46,7 +47,9 @@ NTS recognises the tracks on its streams and shows them to its [Supporters](http
 - **Click a track** to copy its artist and title.
 - **Track notifications:** a notification when a new track starts. Off until you turn it on in the settings.
 
-Talk and unrecognised music show no track. Without an account none of this shows, and the app is a player and nothing more.
+Talk and unrecognised music show no track.
+
+This needs an NTS Supporter account. NTS's own server decides who may read the tracks: with a free account, or without one, the app shows none and does not get around that.
 
 Your password goes straight to the sign-in NTS itself uses and is not saved. What keeps you signed in is a token in your macOS keychain, which **Sign out** removes. After you update the app, macOS may ask once if NTS may use that keychain item.
 
@@ -105,10 +108,6 @@ swift run Check
 ### How casting works
 
 There is no Google Cast SDK for macOS, so the app speaks the Cast protocol itself: it finds devices over Bonjour, opens a TLS connection and asks Google's Default Media Receiver to play the NTS stream. The code is in `Sources/NTSCore/Cast*.swift` and has no dependencies.
-
-### Your own typeface
-
-The app uses `Regular.ttf` and `Bold.ttf` from `~/Library/Application Support/NTS/Fonts` instead of the bundled typeface when both are there.
 
 ## License
 
