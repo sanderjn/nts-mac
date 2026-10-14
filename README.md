@@ -37,7 +37,7 @@ NTS plays in a browser on [nts.live](https://www.nts.live) and in its own apps f
 
 <img src="assets/popover.png" width="300" align="right" alt="The menu bar popover with the playing track under the show">
 
-NTS recognises the tracks on its streams and shows them to its [Supporters](https://www.nts.live/supporters). Sign in with your NTS account under **Settings → NTS account** and the app shows them too:
+NTS recognises the tracks on its streams and shows them to its [Supporters](https://www.nts.live/supporters). Sign in with your Supporter account under **Settings → NTS account** and the app shows them too:
 
 - **In the window:** the last ten tracks next to the stations, with a red dot on the one that is playing. Drag its edge to make the list wider or narrower; the button at the bottom hides it.
 - **In the menu bar popover:** the playing track under the show.
@@ -47,8 +47,6 @@ NTS recognises the tracks on its streams and shows them to its [Supporters](http
 - **Track notifications:** a notification when a new track starts. Off until you turn it on in the settings.
 
 Talk and unrecognised music show no track.
-
-This needs an NTS Supporter account. NTS's own server decides who may read the tracks: with a free account, or without one, the app shows none and does not get around that.
 
 Your password goes straight to the sign-in NTS itself uses and is not saved. What keeps you signed in is a token in your macOS keychain, which **Sign out** removes. After you update the app, macOS may ask once if NTS may use that keychain item.
 
