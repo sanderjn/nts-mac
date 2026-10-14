@@ -228,8 +228,8 @@ private struct StationTile: View {
                 .padding(.bottom, 8)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundStyle(hovering ? .black : .white)
-            .background(hovering ? .white : .black)
+            .foregroundStyle(hovering || isCurrent ? .black : .white)
+            .background(hovering || isCurrent ? .white : .black)
             .overlay {
                 Rectangle().strokeBorder(.white.opacity(isCurrent ? 1 : 0.2), lineWidth: isCurrent ? 2 : 1)
             }
