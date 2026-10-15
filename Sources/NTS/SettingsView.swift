@@ -1,7 +1,9 @@
+import NTSCore
 import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -52,6 +54,19 @@ struct SettingsView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 .padding(.bottom, 18)
+            if let newVersion = model.newVersion {
+                Color.white.opacity(0.2).frame(height: 1)
+                HStack(spacing: 0) {
+                    Spacer()
+                    Color.white.opacity(0.2).frame(width: 1)
+                    BarButton {
+                        openURL(Updates.releasePage)
+                    } label: {
+                        Text("VERSION \(newVersion) AVAILABLE").font(Theme.bold(13))
+                    }
+                }
+                .frame(height: 34)
+            }
         }
         .foregroundStyle(.white)
         .frame(width: 380)

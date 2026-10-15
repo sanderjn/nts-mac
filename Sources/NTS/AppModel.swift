@@ -40,6 +40,8 @@ final class AppModel {
     private(set) var showsMenuBarTrack = UserDefaults.standard.bool(forKey: showsMenuBarTrackKey)
     /// macOS does not let the app show notifications, which only System Settings can change.
     private(set) var notificationsBlocked = false
+    /// A newer release on GitHub, as in "1.3.0".
+    private(set) var newVersion: String?
 
     @ObservationIgnored private let player = StreamPlayer()
     @ObservationIgnored private let castBrowser = CastBrowser()
@@ -100,6 +102,7 @@ final class AppModel {
                 try? await Task.sleep(for: .seconds(60))
             }
         }
+        checkForUpdates()
     }
 
     func select(_ station: Station) {
@@ -284,6 +287,19 @@ final class AppModel {
             castSession.play(current.castMedia)
         }
         publishNowPlaying()
+    }
+
+    /// Once at launch and then daily, as the app can run for weeks.
+    private func checkForUpdates() {
+        guard let running = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else { return }
+        Task { [weak self] in
+            while self != nil {
+                if let latest = try? await Updates.latestVersion(), Updates.isNewer(latest, than: running) {
+                    self?.newVersion = latest
+                }
+                try? await Task.sleep(for: .seconds(24 * 60 * 60))
+            }
+        }
     }
 
     // MARK: - Tracks

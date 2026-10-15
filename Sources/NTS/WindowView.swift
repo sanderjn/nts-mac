@@ -29,6 +29,14 @@ struct WindowView: View {
                     .lineLimit(1)
                     .padding(.leading, 28)
                 Spacer(minLength: 8)
+                if let newVersion = model.newVersion {
+                    Color.white.opacity(0.2).frame(width: 1)
+                    BarButton {
+                        openURL(Updates.releasePage)
+                    } label: {
+                        Text("VERSION \(newVersion) AVAILABLE").font(Theme.bold(13))
+                    }
+                }
                 if model.account.email != nil {
                     Color.white.opacity(0.2).frame(width: 1)
                     BarButton {

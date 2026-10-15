@@ -68,7 +68,7 @@ On macOS 14 you can instead right-click the app and choose **Open**.
 
 The first time you use Cast, macOS asks if NTS may find devices on your local network. Allow it, or turn Google Cast off in the settings if you do not use it.
 
-There is no automatic update. To update, download the new version and replace the old one.
+When a new version is out, the bottom bar of the window says so. To update, download it and replace the old one.
 
 Built for macOS 14 and later, Apple Silicon and Intel.
 

@@ -188,5 +188,11 @@ expect(track("Ode", "Alice Coltrane, Pharoah Sanders and Friends").shortLine(roo
 expect(track("A Title That Is Far Too Long", "An Artist Name That Is Too Long").shortLine(room: 34) == "A Title That Is… – An Artist Name Th…", "both long, both cut")
 expect(track("Untitled", "").shortLine(room: 34) == "Untitled", "no artist, no dash")
 
+expect((try? Updates.parseVersion(Data(#"{"tag_name":"v1.3.0","name":"1.3.0"}"#.utf8))) == "1.3.0", "release tag without the v")
+expect(Updates.isNewer("1.3.0", than: "1.2.0"), "a newer minor version")
+expect(Updates.isNewer("1.10.0", than: "1.9.0"), "versions compare as numbers")
+expect(!Updates.isNewer("1.2", than: "1.2.0"), "a missing part counts as zero")
+expect(!Updates.isNewer("1.1.0", than: "1.2.0"), "an older release is no update")
+
 print(failures == 0 ? "OK" : "\(failures) failed")
 exit(failures == 0 ? 0 : 1)
