@@ -68,9 +68,18 @@ On macOS 14 you can instead right-click the app and choose **Open**.
 
 The first time you use Cast, macOS asks if NTS may find devices on your local network. Allow it, or turn Google Cast off in the settings if you do not use it.
 
-When a new version is out, the bottom bar of the window says so. To update, download it and replace the old one.
-
 Built for macOS 14 and later, Apple Silicon and Intel.
+
+### Updating
+
+When a new version is out, the bottom bar of the window and the settings say so.
+
+1. Quit NTS: open the menu bar popover and click **Quit**.
+2. [Download NTS.dmg](https://github.com/sanderjn/nts-mac/releases/latest/download/NTS.dmg) and open it.
+3. Drag **NTS** onto the **Applications** folder and choose **Replace**.
+4. Open NTS. If macOS blocks it again, click **Open Anyway** under **System Settings → Privacy & Security**, as on the first install.
+
+Your settings stay as they were.
 
 ## Settings
 
