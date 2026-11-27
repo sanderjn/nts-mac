@@ -108,6 +108,17 @@ expect(
     "a load in progress counts as buffering"
 )
 expect(event(CastNamespace.media, #"{"type":"MEDIA_STATUS","status":[]}"#) == .mediaStatus(nil), "no media session")
+expect(
+    event(CastNamespace.media, #"{"type":"MEDIA_STATUS","status":[{"mediaSessionId":3,"playerState":"PLAYING","currentTime":0.21}]}"#)
+        == .mediaStatus(CastMediaStatus(mediaSessionID: 3, state: .playing, currentTime: 0.21)),
+    "media time is read"
+)
+expect(
+    event(CastNamespace.media, #"{"type":"MEDIA_STATUS","status":[{"mediaSessionId":3,"playerState":"PLAYING","currentTime":12}]}"#)
+        == .mediaStatus(CastMediaStatus(mediaSessionID: 3, state: .playing, currentTime: 12)),
+    "whole-second media time is read"
+)
+expect(CastPayload.getMediaStatus(mediaSessionID: 3, requestID: 5) == #"{"mediaSessionId":3,"requestId":5,"type":"GET_STATUS"}"#, "media status payload")
 expect(event(CastNamespace.media, #"{"type":"LOAD_FAILED"}"#) == .loadFailed, "load failed")
 expect(event(CastNamespace.media, "nonsense") == .other, "unreadable payload is ignored")
 

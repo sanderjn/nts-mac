@@ -53,10 +53,13 @@ public struct CastMediaStatus: Equatable, Sendable {
 
     public let mediaSessionID: Int
     public let state: State
+    /// Seconds into the stream. The receiver says PLAYING well before this starts to move.
+    public let currentTime: Double?
 
-    public init(mediaSessionID: Int, state: State) {
+    public init(mediaSessionID: Int, state: State, currentTime: Double? = nil) {
         self.mediaSessionID = mediaSessionID
         self.state = state
+        self.currentTime = currentTime
     }
 }
 
@@ -81,6 +84,10 @@ public enum CastPayload {
 
     public static func getStatus(requestID: Int) -> String {
         json(["type": "GET_STATUS", "requestId": requestID])
+    }
+
+    public static func getMediaStatus(mediaSessionID: Int, requestID: Int) -> String {
+        json(["type": "GET_STATUS", "mediaSessionId": mediaSessionID, "requestId": requestID])
     }
 
     public static func setVolume(_ level: Double, requestID: Int) -> String {
@@ -175,7 +182,8 @@ public enum CastEvent: Equatable, Sendable {
                 default: state = .idle(.other)
                 }
             }
-            self = .mediaStatus(CastMediaStatus(mediaSessionID: id, state: state))
+            let time = (entry["currentTime"] as? NSNumber)?.doubleValue
+            self = .mediaStatus(CastMediaStatus(mediaSessionID: id, state: state, currentTime: time))
         case (CastNamespace.media, "LOAD_FAILED"), (CastNamespace.media, "LOAD_CANCELLED"):
             self = .loadFailed
         default:
