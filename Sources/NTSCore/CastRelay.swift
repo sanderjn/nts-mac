@@ -74,8 +74,10 @@ public final class CastRelay {
             self.receive(data)
         }, onEnd: { [weak self] in
             guard let self, generation == self.generation else { return }
-            // Receivers keep their connection; they hear the new connection's audio after a short gap.
+            // Receivers keep their connection and hear the new connection's audio after a short gap.
+            // The buffer starts over, so a new receiver never gets the seam between the two.
             self.upstream = nil
+            self.buffer = []
             self.retry = Task { [weak self] in
                 try? await Task.sleep(for: .seconds(2))
                 guard !Task.isCancelled, let self, generation == self.generation else { return }
@@ -234,7 +236,7 @@ public final class CastRelay {
             guard name.hasPrefix("en") else { continue }
             var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
             guard getnameinfo(address, socklen_t(address.pointee.sa_len), &host, socklen_t(host.count), nil, 0, NI_NUMERICHOST) == 0 else { continue }
-            let text = String(cString: host)
+            let text = String(decoding: host.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
             // Self-assigned addresses are not on the network the receiver is on.
             guard !text.hasPrefix("169.254.") else { continue }
             found.append((name, text))
