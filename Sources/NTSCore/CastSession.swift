@@ -30,6 +30,10 @@ public final class CastSession {
     private var lastHeard = Date.now
     private var heartbeat: Task<Void, Never>?
     private var reload: Task<Void, Never>?
+    // The receiver reports PLAYING about 16 s before any sound, while it fills its buffer.
+    // Playing is only reported once the media time has moved past where it was first seen.
+    private var heardFrom: Double?
+    private var confirm: Task<Void, Never>?
     private var volumeSetAt = Date.distantPast
     private var volumeSend: Task<Void, Never>?
 
@@ -82,6 +86,7 @@ public final class CastSession {
     public func stop() {
         wanted = nil
         reload?.cancel()
+        stopConfirming()
         if let mediaSessionID {
             stopMedia(mediaSessionID)
         } else {
@@ -160,6 +165,50 @@ public final class CastSession {
         reload?.cancel()
         started = true
         send(CastPayload.load(wanted, sessionID: app.sessionID, requestID: nextRequestID()), CastNamespace.media, to: app.transportID)
+        stopConfirming()
+    }
+
+    /// Asks for the media time until it moves, as the receiver says nothing when it does.
+    private func confirmPlaying(_ status: CastMediaStatus) {
+        guard let time = status.currentTime else {
+            // Nothing to go by.
+            report(.playing)
+            return
+        }
+        guard let heardFrom else {
+            self.heardFrom = time
+            report(.loading)
+            pollMediaStatus(status.mediaSessionID)
+            return
+        }
+        if time > heardFrom + 0.3 {
+            stopConfirming()
+            report(.playing)
+        } else {
+            report(.loading)
+            pollMediaStatus(status.mediaSessionID)
+        }
+    }
+
+    private func pollMediaStatus(_ id: Int) {
+        guard confirm == nil else { return }
+        confirm = Task { [weak self] in
+            while true {
+                try? await Task.sleep(for: .milliseconds(500))
+                guard !Task.isCancelled, let self else { return }
+                guard let app = self.app, self.mediaSessionID == id else {
+                    self.confirm = nil
+                    return
+                }
+                self.send(CastPayload.getMediaStatus(mediaSessionID: id, requestID: self.nextRequestID()), CastNamespace.media, to: app.transportID)
+            }
+        }
+    }
+
+    private func stopConfirming() {
+        confirm?.cancel()
+        confirm = nil
+        heardFrom = nil
     }
 
     private func stopMedia(_ id: Int) {
@@ -203,6 +252,7 @@ public final class CastSession {
                 stopPending = false
                 wanted = nil
                 reload?.cancel()
+                stopConfirming()
                 report(.idle)
             }
         case .launchError:
@@ -213,6 +263,7 @@ public final class CastSession {
                 // A replaced session reports idle after its successor has started.
                 guard status.mediaSessionID == mediaSessionID else { return }
                 mediaSessionID = nil
+                stopConfirming()
                 guard wanted != nil else { return }
                 switch reason {
                 case .ended:
@@ -233,11 +284,13 @@ public final class CastSession {
             }
             switch status.state {
             case .playing:
-                report(.playing)
+                if self.status == .playing, heardFrom == nil { return }
+                confirmPlaying(status)
             case .buffering:
                 report(.loading)
             case .paused:
                 // Paused from the receiver's own remote, which can also resume it.
+                stopConfirming()
                 report(.idle)
             case .idle:
                 break
@@ -299,6 +352,7 @@ public final class CastSession {
         generation += 1
         heartbeat?.cancel()
         reload?.cancel()
+        stopConfirming()
         volumeSend?.cancel()
         volumeSend = nil
         volumeSetAt = .distantPast
