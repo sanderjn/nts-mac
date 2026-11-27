@@ -119,6 +119,19 @@ expect(
     "whole-second media time is read"
 )
 expect(CastPayload.getMediaStatus(mediaSessionID: 3, requestID: 5) == #"{"mediaSessionId":3,"requestId":5,"type":"GET_STATUS"}"#, "media status payload")
+
+// An MPEG-1 Layer III header at 256 kbps and 44.1 kHz without padding: frames of 835 bytes.
+let mp3Header: [UInt8] = [0xFF, 0xFB, 0xD0, 0x00]
+func mp3Frame() -> [UInt8] { mp3Header + [UInt8](repeating: 0x55, count: 835 - 4) }
+let mp3 = [UInt8](repeating: 0x00, count: 100) + mp3Frame() + mp3Frame() + mp3Frame()
+expect(CastRelay.frameStart(in: mp3, from: 0) == 100, "first frame is found")
+expect(CastRelay.frameStart(in: mp3, from: 101) == 935, "a cut mid-frame moves on to the next frame")
+let falseSync = [UInt8](repeating: 0x00, count: 10) + mp3Header + [UInt8](repeating: 0x00, count: 20) + mp3Frame() + mp3Frame()
+expect(CastRelay.frameStart(in: falseSync, from: 0) == 34, "a header without a frame after it is skipped")
+expect(CastRelay.frameStart(in: [0xFF, 0xFF, 0xFF], from: 0) == nil, "too short to hold a frame")
+expect(CastRelay.path(of: Data("GET /3 HTTP/1.1\r\nHost: x\r\n\r\n".utf8)) == "/3", "request path")
+expect(CastRelay.path(of: Data("GET /3?x=1 HTTP/1.1\r\n\r\n".utf8)) == "/3", "query is dropped")
+expect(CastRelay.path(of: Data("POST /3 HTTP/1.1\r\n\r\n".utf8)) == nil, "only GET and HEAD")
 expect(event(CastNamespace.media, #"{"type":"LOAD_FAILED"}"#) == .loadFailed, "load failed")
 expect(event(CastNamespace.media, "nonsense") == .other, "unreadable payload is ignored")
 

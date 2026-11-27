@@ -46,6 +46,9 @@ final class AppModel {
     @ObservationIgnored private let player = StreamPlayer()
     @ObservationIgnored private let castBrowser = CastBrowser()
     @ObservationIgnored private var castSession: CastSession?
+    @ObservationIgnored private let castRelay = CastRelay()
+    // Set while asleep and after, until the next play, so a cast that moved to NTS's own stream stays there.
+    @ObservationIgnored private var castsDirect = false
     @ObservationIgnored private var lastRefresh = Date.distantPast
     @ObservationIgnored private var hasPlayed = false
     @ObservationIgnored private var loadingTicker: Task<Void, Never>?
@@ -83,14 +86,27 @@ final class AppModel {
             self?.followTracks()
             self?.publishNowPlaying()
         }
-        if showsCast { castBrowser.start() }
+        if showsCast {
+            castBrowser.start()
+            castRelay.listen()
+        }
         registerRemoteCommands()
         // The local stream breaks during sleep anyway; without this it would reconnect and blare on wake.
         // A cast keeps playing on its own device.
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
-                guard let self, self.castSession == nil else { return }
-                self.pause()
+                guard let self else { return }
+                guard let castSession = self.castSession else {
+                    self.pause()
+                    return
+                }
+                // The relay sleeps with this Mac, so the device gets the stream from NTS itself.
+                // That costs it about 16 s of silence, but it keeps playing.
+                self.castsDirect = true
+                if self.playback != .stopped, let current = self.current {
+                    castSession.play(current.castMedia)
+                }
+                self.castRelay.stop()
             }
         }
         NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main) { [weak self] _ in
@@ -135,6 +151,7 @@ final class AppModel {
         let wasPlaying = playback != .stopped
         castSession?.close(stoppingReceiver: true)
         castSession = nil
+        castRelay.stop()
         player.stop()
         castDevice = device
         castVolume = nil
@@ -144,6 +161,8 @@ final class AppModel {
             session.onVolumeChange = { [weak self] in self?.castVolume = $0 }
             session.connect()
             castSession = session
+            // Fills the relay while the device connects, so the first play starts at once.
+            if let current { castRelay.follow(current.streamURL) }
         }
         update(.stopped)
         if wasPlaying, let current { play(current) }
@@ -155,9 +174,11 @@ final class AppModel {
         UserDefaults.standard.set(shows, forKey: Self.showsCastKey)
         if shows {
             castBrowser.start()
+            castRelay.listen()
         } else {
             cast(to: nil)
             castBrowser.stop()
+            castRelay.close()
             castDevices = []
         }
     }
@@ -247,11 +268,21 @@ final class AppModel {
         hasPlayed = true
         followTracks()
         if let castSession {
-            castSession.play(station.castMedia)
+            castsDirect = false
+            castSession.play(relayed(station))
         } else {
             player.play(station.streamURL)
         }
         refreshIfStale()
+    }
+
+    /// What a Cast device plays: the stream through this Mac's relay, or straight from NTS when the relay cannot serve it.
+    private func relayed(_ station: Station) -> CastMedia {
+        let media = station.castMedia
+        guard !castsDirect else { return media }
+        castRelay.follow(station.streamURL)
+        guard let url = castRelay.url(for: station.streamURL) else { return media }
+        return CastMedia(url: url, title: media.title, artist: media.artist, imageURL: media.imageURL)
     }
 
     private func update(_ playback: Playback) {
@@ -284,7 +315,7 @@ final class AppModel {
         // The receiver shows what it was given at load time, so a new show needs a new load.
         // That costs a few seconds of silence, which a speaker has nothing to show for.
         if let castSession, castDevice?.hasDisplay == true, playback != .stopped, let current {
-            castSession.play(current.castMedia)
+            castSession.play(relayed(current))
         }
         publishNowPlaying()
     }
